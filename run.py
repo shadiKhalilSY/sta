@@ -20,6 +20,7 @@ class BinanceWs:
             self.twm.start_aggtrade_socket(callback=self.socketMessage, symbol=pair)
         
     def socketMessage(self,msg):
+        print(msg)
         if msg["e"] == "aggTrade":
             trades_file = f"data/{msg['s']}_trades.csv"
             if msg["s"] not in self.trades:
