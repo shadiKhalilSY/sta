@@ -3,6 +3,8 @@ from numerize import numerize
 from datetime import  datetime, timezone, timedelta
 import pandas as pd
 import asyncio
+import nest_asyncio
+nest_asyncio.apply()
 
 
 class BinanceWs:
