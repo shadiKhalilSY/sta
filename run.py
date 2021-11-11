@@ -21,7 +21,7 @@ class BinanceWs:
             if pair not in self.trades:
                 self.trades[pair] = pd.DataFrame([],columns=["time","price","quantity","qusdt","bullish"])
             if not self.bsp_on:
-                task = asyncio.create_task(self.buySellPressure())
+                task = asyncio.get_event_loop().create_task(self.buySellPressure())
                 asyncio.get_event_loop().run_until_complete(task)
                 self.bsp_on = True
                 print("BuySellPressure Turned On")
