@@ -54,13 +54,17 @@ class BinanceWs:
         self.twm.stop()
         
     async def buySellPressure(self):
+        symbol= "BTCUSDT"
+        trades_file = f"data/{symbol}_trades.csv"
         while True:
             print(str(datetime.now()))
-            if len(self.trades["BTCUSDT"].index) > 0:
-                last_min_trades = self.trades["BTCUSDT"][(self.trades["BTCUSDT"]['time'] < datetime.now(timezone.utc).replace(second=0, microsecond=0).timestamp()*1000) & (self.trades["BTCUSDT"]['time'] >= (datetime.now(timezone.utc).replace(second=0, microsecond=0)-timedelta(minutes=1)).timestamp()*1000)]
+            if len(self.trades[symbol].index) > 0:
+                last_min_trades = self.trades[symbol][(self.trades[symbol]['time'] < datetime.now(timezone.utc).replace(second=0, microsecond=0).timestamp()*1000) & (self.trades[symbol]['time'] >= (datetime.now(timezone.utc).replace(second=0, microsecond=0)-timedelta(minutes=1)).timestamp()*1000)]
                 print(f'coins: {numerize.numerize(last_min_trades["quantity"].astype(float).sum())} value: ${numerize.numerize(last_min_trades["qusdt"].astype(float).sum())}')
                 print("==========================")
-                self.trades["BTCUSDT"] = self.trades["BTCUSDT"][self.trades["BTCUSDT"].apply(lambda x: x.values.tolist() not in last_min_trades.values.tolist(), axis=1)]
+                self.trades[symbol] = self.trades[symbol][self.trades[symbol].apply(lambda x: x.values.tolist() not in last_min_trades.values.tolist(), axis=1)]
+                last_min_trades.to_csv(trades_file,mode='a',header=False, index=False)
+                del last_min_trades
             await asyncio.sleep(0.1 + float(str(datetime.now().replace(second=0, microsecond=0)+timedelta(minutes=1) - datetime.now()).split(":")[-1]))
         
 if __name__ == "__main__":
