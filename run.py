@@ -57,7 +57,7 @@ class BinanceWs:
             print(str(datetime.now()))
             if len(self.trades["SCUSDT"].index) > 0:
                 last_min_trades = self.trades["SCUSDT"][(self.trades["SCUSDT"]['time'] < datetime.now(timezone.utc).replace(second=0, microsecond=0).timestamp()*1000) & (self.trades["SCUSDT"]['time'] >= (datetime.now(timezone.utc).replace(second=0, microsecond=0)-timedelta(minutes=1)).timestamp()*1000)]
-                print(f'coins: {last_min_trades["quantity"].astype(float).sum()} value: ${last_min_trades["qusdt"].astype(float).sum()}')
+                print(f'coins: {numerize.numerize(last_min_trades["quantity"].astype(float).sum())} value: ${numerize.numerize(last_min_trades["qusdt"].astype(float).sum())}')
                 print("==========================")
                 self.trades["SCUSDT"] = self.trades["SCUSDT"][self.trades["SCUSDT"].apply(lambda x: x.values.tolist() not in last_min_trades.values.tolist(), axis=1)]
             await asyncio.sleep(0.1 + float(str(datetime.now().replace(second=0, microsecond=0)+timedelta(minutes=1) - datetime.now()).split(":")[-1]))
