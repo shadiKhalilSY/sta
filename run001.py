@@ -167,7 +167,7 @@ class MessageManager:
                     last_min_trades = trades[(trades['time'] < datetime.now(timezone.utc).replace(second=0, microsecond=0).timestamp()*1000) & (trades['time'] >= (datetime.now(timezone.utc).replace(second=0, microsecond=0)-timedelta(minutes=1)).timestamp()*1000)]
                     buy = last_min_trades[(self.trades[symbol]['bullish'] == False)]['qusdt'].sum()
                     sell = last_min_trades[(self.trades[symbol]['bullish'] == True)]['qusdt'].sum()
-                    print(f'''### {symbol} ### C: {numerize.numerize(last_min_trades["quantity"].astype(float).sum())} VOL: ${numerize.numerize(last_min_trades["qusdt"].astype(float).sum())}  BUY: ${numerize.numerize(buy)}  /  SELL: ${numerize.numerize(sell)}  ''')
+                    print(f'''{"{:<8}".format(symbol)}  C: { "{:<8}".format(numerize.numerize(last_min_trades["quantity"].astype(float).sum()))} VOL: ${"{:<8}".format(numerize.numerize(last_min_trades["qusdt"].astype(float).sum()))}  BUY: ${"{:<8}".format(numerize.numerize(buy))}  /  SELL: ${"{:<8}".format(numerize.numerize(sell))}  ''')
                     trades = trades[trades.apply(lambda x: x.values.tolist() not in last_min_trades.values.tolist(), axis=1)]
                     last_min_trades.to_csv(trades_file,mode='a',header=False, index=False)
                     del last_min_trades
