@@ -159,18 +159,17 @@ class MessageManager:
             print(msg)
             
     async def buy_sell_pressure(self):
-        symbol= "BTCUSDT"
-        trades_file = f"data/{symbol}_trades.csv"
         while True:
             print(str(datetime.now()))
-            if symbol in self.trades:
-                if len(self.trades[symbol].index) > 0:
-                    last_min_trades = self.trades[symbol][(self.trades[symbol]['time'] < datetime.now(timezone.utc).replace(second=0, microsecond=0).timestamp()*1000) & (self.trades[symbol]['time'] >= (datetime.now(timezone.utc).replace(second=0, microsecond=0)-timedelta(minutes=1)).timestamp()*1000)]
-                    print(f'coins: {numerize.numerize(last_min_trades["quantity"].astype(float).sum())} value: ${numerize.numerize(last_min_trades["qusdt"].astype(float).sum())}')
-                    print("==========================")
-                    self.trades[symbol] = self.trades[symbol][self.trades[symbol].apply(lambda x: x.values.tolist() not in last_min_trades.values.tolist(), axis=1)]
+            for symbol, trades in self.trades.items():
+                trades_file = f"data/{symbol}_trades.csv"
+                if len(trades.index) > 0:
+                    last_min_trades = trades[(trades['time'] < datetime.now(timezone.utc).replace(second=0, microsecond=0).timestamp()*1000) & (trades['time'] >= (datetime.now(timezone.utc).replace(second=0, microsecond=0)-timedelta(minutes=1)).timestamp()*1000)]
+                    print(f'### {symbol} ### coins: {numerize.numerize(last_min_trades["quantity"].astype(float).sum())} value: ${numerize.numerize(last_min_trades["qusdt"].astype(float).sum())}')
+                    trades = trades[trades.apply(lambda x: x.values.tolist() not in last_min_trades.values.tolist(), axis=1)]
                     last_min_trades.to_csv(trades_file,mode='a',header=False, index=False)
                     del last_min_trades
+            print("================================")
             await asyncio.sleep(0.1 + float(str(datetime.now().replace(second=0, microsecond=0)+timedelta(minutes=1) - datetime.now()).split(":")[-1]))
 
 
@@ -179,6 +178,8 @@ async def main():
     bws = WebsocketManager()
     await bws.create(mm)
     await bws.subscribe_trades(["btcusdt@aggTrade"])
+    await bws.subscribe_trades(["ethusdt@aggTrade"])
+    await bws.subscribe_trades(["bnbusdt@aggTrade"])
     task = asyncio.get_event_loop().create_task(mm.buy_sell_pressure())
     asyncio.get_event_loop().run_until_complete(task)
     #await asyncio.sleep(2)
