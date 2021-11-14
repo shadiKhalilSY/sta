@@ -148,7 +148,7 @@ class MessageManager:
         
     async def msg_recv(self,msg):
         if "e" in msg:
-            if msg["e"] == "trade":
+            if msg["e"] == "aggTrade":
                 if msg["s"] not in self.trades:
                     self.trades[msg["s"]] = pd.DataFrame([],columns=["time","price","quantity","qusdt","bullish"])
                     
@@ -178,7 +178,7 @@ async def main():
     mm = MessageManager()
     bws = WebsocketManager()
     await bws.create(mm)
-    await bws.subscribe_trades(["btcusdt@trade"])
+    await bws.subscribe_trades(["btcusdt@aggTrade"])
     task = asyncio.get_event_loop().create_task(mm.buy_sell_pressure())
     asyncio.get_event_loop().run_until_complete(task)
     #await asyncio.sleep(2)
