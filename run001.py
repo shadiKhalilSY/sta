@@ -28,6 +28,7 @@ class ConnectWebsocket:
         self.connect()
     
     def connect(self):
+        self.log.info("trying to connect")
         self.conn = asyncio.ensure_future(self.run())
         #url = "wss://stream.binance.com:9443/ws"
         #async with websockets.connect(url) as ws:
@@ -41,7 +42,7 @@ class ConnectWebsocket:
 
         logging.info("*** connecting *** to wss://stream.binance.com:9443/ws")
         try:
-            async with ws.connect("wss://stream.binance.com:9443/ws") as socket:
+            async with ws.connect("wss://stream.binance.com:9443/ws",ping_interval=None) as socket:
                 self.on_connect(socket)
                 
 
@@ -86,9 +87,6 @@ class ConnectWebsocket:
         if self.reconnect_attempts < self.MAX_RECONNECTS:
 
             self.log.info(f"websocket reconnecting {self.MAX_RECONNECTS - self.reconnect_attempts} attempts left")
-            reconnect_wait = 2
-            self.log.info(f' waiting {reconnect_wait}s')
-            await asyncio.sleep(reconnect_wait)
             self.connect()
         else:
             # maybe raise an exception
@@ -97,6 +95,7 @@ class ConnectWebsocket:
         
     async def cancel(self):
         try:
+            self.log.info("trying to disconnect")
             self.conn.cancel()
         except asyncio.CancelledError:
             pass
@@ -159,13 +158,16 @@ class MessageManager:
             print(msg)
             
     async def buy_sell_pressure(self):
+        
         while True:
             print(str(datetime.now()))
             for symbol, trades in self.trades.items():
                 trades_file = f"data/{symbol}_trades.csv"
                 if len(trades.index) > 0:
                     last_min_trades = trades[(trades['time'] < datetime.now(timezone.utc).replace(second=0, microsecond=0).timestamp()*1000) & (trades['time'] >= (datetime.now(timezone.utc).replace(second=0, microsecond=0)-timedelta(minutes=1)).timestamp()*1000)]
-                    print(f'### {symbol} ### coins: {numerize.numerize(last_min_trades["quantity"].astype(float).sum())} value: ${numerize.numerize(last_min_trades["qusdt"].astype(float).sum())}')
+                    buy = last_min_trades[(self.trades[symbol]['bullish'] == False)]['qusdt'].sum()
+                    sell = last_min_trades[(self.trades[symbol]['bullish'] == True)]['qusdt'].sum()
+                    print(f'''### {symbol} ### C: {numerize.numerize(last_min_trades["quantity"].astype(float).sum())} VOL: ${numerize.numerize(last_min_trades["qusdt"].astype(float).sum())}  BUY: ${numerize.numerize(buy)}  /  SELL: ${numerize.numerize(sell)}  ''')
                     trades = trades[trades.apply(lambda x: x.values.tolist() not in last_min_trades.values.tolist(), axis=1)]
                     last_min_trades.to_csv(trades_file,mode='a',header=False, index=False)
                     del last_min_trades
@@ -177,9 +179,12 @@ async def main():
     mm = MessageManager()
     bws = WebsocketManager()
     await bws.create(mm)
-    await bws.subscribe_trades(["btcusdt@aggTrade"])
-    await bws.subscribe_trades(["ethusdt@aggTrade"])
-    await bws.subscribe_trades(["bnbusdt@aggTrade"])
+    await bws.subscribe_trades(["xecusdt@aggTrade"])
+    await bws.subscribe_trades(["winusdt@aggTrade"])
+    await bws.subscribe_trades(["bttusdt@aggTrade"])
+    await bws.subscribe_trades(["dentusdt@aggTrade"])
+    await bws.subscribe_trades(["scusdt@aggTrade"])
+    await bws.subscribe_trades(["xvgusdt@aggTrade"])
     task = asyncio.get_event_loop().create_task(mm.buy_sell_pressure())
     asyncio.get_event_loop().run_until_complete(task)
     #await asyncio.sleep(2)
