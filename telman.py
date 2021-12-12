@@ -14,7 +14,7 @@ BASEURL="https://api.binance.com/api/v3/"
 KLINEURL = BASEURL + "klines"
 AGGTRADES = BASEURL + "aggTrades"
 REFRESHTIME = 10000
-symbol = "BTCUSDT"
+symbol = "SHIBUSDT"
 trades_file = f"data/{symbol}_trades.csv"
 
 def dwonloadTrades(symbol,start):
@@ -76,8 +76,8 @@ class TeleManager:
             recent_trades.to_csv(trades_file,mode='a',header=False, index=False)
             df_new = recent_trades.groupby(recent_trades['T'],as_index=False).aggregate({'p':'median','q':sum,'T':'first','m':'first','usdt':'sum'}).sort_values(by=['usdt'],ascending=False)
         
-            for index, row in df_new[df_new["usdt"]>100000].iterrows():
-                msg=f"{'🟢' if row['m'] == 0 else '🔴'} <b>#{symbol}</b> {'Buy Trade' if row['m'] == 0 else 'Sell Trade'}\n<b>Total:  ${numerize.numerize(row['usdt'])}💰</b>\nPrice:  ${numerize.numerize(row['p'])}\nAmount:  {numerize.numerize(row['q'])}btc \n"
+            for index, row in df_new[df_new["usdt"]>200000].iterrows():
+                msg=f"{'🟢' if row['m'] == 0 else '🔴'} <b>#{symbol}</b> {'Buy Trade' if row['m'] == 0 else 'Sell Trade'}\n<b>Total:  ${numerize.numerize(row['usdt'])}💰</b>\nPrice:  ${row['p']}\nAmount:  {numerize.numerize(row['q'])}btc \n"
                 self.updater.bot.send_message(chat_id=users,text=msg,parse_mode="HTML")
             time.sleep(10)
 
