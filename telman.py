@@ -77,7 +77,7 @@ class TeleManager:
             df_new = recent_trades.groupby(recent_trades['T'],as_index=False).aggregate({'p':'median','q':sum,'T':'first','m':'first','usdt':'sum'}).sort_values(by=['usdt'],ascending=False)
         
             for index, row in df_new[df_new["usdt"]>200000].iterrows():
-                msg=f"{'🟢' if row['m'] == 0 else '🔴'} <b>#{symbol}</b> {'Buy Trade' if row['m'] == 0 else 'Sell Trade'}\n<b>Total:  ${numerize.numerize(row['usdt'])}💰</b>\nPrice:  ${row['p']}\nAmount:  {numerize.numerize(row['q'])}btc \n"
+                msg=f"{'🟢' if row['m'] == 0 else '🔴'} <b>#{symbol}</b> {'Buy Trade' if row['m'] == 0 else 'Sell Trade'}\n<b>Total:  ${numerize.numerize(row['usdt'])}💰</b>\nPrice:  ${row['p']}\nAmount:  {numerize.numerize(row['q'])} \n"
                 self.updater.bot.send_message(chat_id=users,text=msg,parse_mode="HTML")
             time.sleep(10)
 
